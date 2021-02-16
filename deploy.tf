@@ -69,10 +69,8 @@ resource "google_compute_instance" "instance" {
   }
 
   metadata = {
-    shutdown-script = <<EOS
-#!/bin/sh
-/opt/google-cloud-sdk/bin/gcloud pubsub topics publish ${google_pubsub_topic.topic.id} --message "timeout=240"
-EOS
+    shutdown-script       = file("shutdown-script.py")
+    shutdown-script-topic = google_pubsub_topic.topic.id
   }
 }
 
