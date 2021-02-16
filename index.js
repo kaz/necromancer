@@ -4,14 +4,15 @@ const Compute = require("@google-cloud/compute");
 const compute = new Compute();
 const vm = compute.zone(process.env.ZONE).vm(process.env.VM);
 
-exports.run = async () => {
-	const [{status}] = await vm.getMetadata();
+const run = async () => {
+	const [{ status }] = await vm.getMetadata();
 	if (status != "TERMINATED") {
-		console.log(`status is now ${status}. retrying...`);
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		return exports.run();
+		console.log(`Current VM status is ${status}. Waiting for VM to be TERMINATED ...`);
+		await vm.waitFor("TERMINATED");
 	}
 
-	console.log(`status is now ${status}. relaunching instance...`);
+	console.log(`Restarting VM ...`);
 	return vm.start();
 };
+
+module.exports = { run };
