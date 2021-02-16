@@ -19,10 +19,10 @@ const ressurect = async ({ data }) => {
 	}
 	if (timeout && status != "TERMINATED") {
 		console.log(`Current VM status is ${status}. Waiting for VM to be TERMINATED ...`);
-		await vm.waitFor("TERMINATED", { timeout }).catch(() => console.warn("[!] Timed out"));
+		await vm.waitFor("TERMINATED", { timeout }).catch(() => console.error("[!] Timed out"));
 	}
 
-	console.log(`Restarting VM ...`);
+	console.log("Restarting VM ...");
 	return vm.start();
 };
 
