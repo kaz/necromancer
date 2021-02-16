@@ -1,5 +1,6 @@
 {
-  "dependencies": {
-    "@google-cloud/compute": "^1.2.0"
-  }
+	"name": "necromancer",
+	"dependencies": {
+		"@google-cloud/compute": "^2.4.3"
+	}
 }
