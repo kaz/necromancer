@@ -69,8 +69,8 @@ resource "google_compute_instance" "instance" {
   }
 
   metadata = {
-    shutdown-script       = file("shutdown-script.py")
-    shutdown-script-topic = google_pubsub_topic.topic.id
+    shutdown-script    = file("shutdown-script.py")
+    ressurection-topic = google_pubsub_topic.topic.id
   }
 }
 
@@ -103,18 +103,13 @@ resource "google_cloudfunctions_function" "function" {
   name = local.name
 
   runtime             = "nodejs14"
-  available_memory_mb = 128
-  entry_point         = "run"
+  entry_point         = "ressurect"
   timeout             = 300
+  available_memory_mb = 128
 
   service_account_email = google_service_account.sa.email
   source_archive_bucket = google_storage_bucket.bucket.name
   source_archive_object = google_storage_bucket_object.object.name
-
-  environment_variables = {
-    ZONE = google_compute_instance.instance.zone
-    VM   = google_compute_instance.instance.name
-  }
 
   event_trigger {
     event_type = "providers/cloud.pubsub/eventTypes/topic.publish"
@@ -124,4 +119,14 @@ resource "google_cloudfunctions_function" "function" {
 
 resource "google_pubsub_topic" "topic" {
   name = local.name
+}
+
+resource "google_cloud_scheduler_job" "job" {
+  name     = local.name
+  schedule = "*/15 * * * *"
+
+  pubsub_target {
+    topic_name = google_pubsub_topic.topic.id
+    data       = base64encode("zone=${google_compute_instance.instance.zone}&instance=${google_compute_instance.instance.name}&timeout=0")
+  }
 }

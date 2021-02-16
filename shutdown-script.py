@@ -2,6 +2,7 @@
 
 import json
 import base64
+import urllib.parse
 import urllib.request
 
 def run_request(req: urllib.request.Request) -> str:
@@ -15,8 +16,14 @@ def get_meta(path: str) -> str:
 		{"Metadata-Flavor": "Google"},
 	))
 
+def get_zone() -> str:
+	return get_meta("instance/zone").split("/")[-1]
+
+def get_instance() -> str:
+	return get_meta("instance/name")
+
 def get_topic() -> str:
-	return get_meta("instance/attributes/shutdown-script-topic")
+	return get_meta("instance/attributes/ressurection-topic")
 
 def get_token() -> str:
 	res = get_meta("instance/service-accounts/default/token")
@@ -24,11 +31,13 @@ def get_token() -> str:
 	return data["access_token"]
 
 def encode_message(message: dict) -> str:
-	return base64.b64encode(json.dumps(message).encode("utf-8")).decode("utf-8")
+	params = urllib.parse.urlencode(message)
+	return base64.b64encode(params.encode("utf-8")).decode("utf-8")
 
 def publish_message(message: dict) -> str:
 	topic = get_topic()
 	token = get_token()
+
 	return run_request(urllib.request.Request(
 		f"https://pubsub.googleapis.com/v1/{topic}:publish",
 		json.dumps({
@@ -42,4 +51,11 @@ def publish_message(message: dict) -> str:
 		},
 	))
 
-print(publish_message({"timeout": 240}))
+def ressurect(timeout: int) -> str:
+	return publish_message({
+		"zone": get_zone(),
+		"instance": get_instance(),
+		"timeout": timeout,
+	})
+
+print(ressurect(180))
