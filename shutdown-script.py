@@ -23,7 +23,7 @@ def get_instance() -> str:
 	return get_meta("instance/name")
 
 def get_topic() -> str:
-	return get_meta("instance/attributes/ressurection-topic")
+	return get_meta("instance/attributes/resurrection-topic")
 
 def get_token() -> str:
 	res = get_meta("instance/service-accounts/default/token")
@@ -51,11 +51,11 @@ def publish_message(message: dict) -> str:
 		},
 	))
 
-def ressurect(timeout: int) -> str:
+def resurrect(timeout: int) -> str:
 	return publish_message({
 		"zone": get_zone(),
 		"instance": get_instance(),
 		"timeout": timeout,
 	})
 
-print(ressurect(180))
+print(resurrect(500))
